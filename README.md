@@ -37,3 +37,7 @@ You can now access the server at http://localhost:8000
 If CSS is not correctly loaded
 
     npm run dev
+
+You can edit CSS style in resources/sass/app.scss file. To see the changes automatically after saving
+
+    npm run watch

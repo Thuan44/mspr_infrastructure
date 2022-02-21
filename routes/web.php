@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,3 +21,7 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('2fa', [App\Http\Controllers\Auth\TwoFAController::class, 'index'])->name('2fa.index');
+Route::post('2fa', [App\Http\Controllers\Auth\TwoFAController::class, 'store'])->name('2fa.post');
+Route::get('2fa/reset', [App\Http\Controllers\Auth\TwoFAController::class, 'resend'])->name('2fa.resend');
