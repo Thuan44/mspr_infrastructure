@@ -46,9 +46,9 @@ class LoginController extends Controller
 
     /**
      * login method will 
+     * check nb of attempts
      * validate fields, 
      * check user credentials, 
-     * check nb of attempts
      * generate verfication code by email
      * redirect to home if logged in
      *
@@ -96,8 +96,9 @@ class LoginController extends Controller
      */
     public function checkTooManyFailedAttempts()
     {
-        // Check if user has less than 5 attempts
-        if (RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        $maxNumberOfAttempts = 5;
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), $maxNumberOfAttempts)) {
             return redirect("login")->with('attemptError', 'Too many attempts. Please try again later.');
         }
 
