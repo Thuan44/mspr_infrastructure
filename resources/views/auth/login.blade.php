@@ -4,10 +4,17 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                @if (session()->get('error'))
+                @if (session()->get('error') && !session()->get('attemptError'))
                     <div>
                         <div class="alert alert-danger">
                             {{ session()->get('error') }}
+                        </div>
+                    </div>
+                @endif
+                @if (session()->get('attemptError'))
+                    <div>
+                        <div class="alert alert-warning">
+                            {{ session()->get('attemptError') }}
                         </div>
                     </div>
                 @endif

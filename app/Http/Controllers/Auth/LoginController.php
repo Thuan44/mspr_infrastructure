@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Exception;
 use App\Models\UserCode;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LoginController extends Controller
 {
@@ -43,12 +45,19 @@ class LoginController extends Controller
     }
 
     /**
-     * login method will validate fields, check user credentials, generate verfication code by email and redirect to route
+     * login method will 
+     * validate fields, 
+     * check user credentials, 
+     * check nb of attempts
+     * generate verfication code by email
+     * redirect to home if logged in
      *
      * @return response()
      */
     public function login(Request $request)
     {
+        $this->checkTooManyFailedAttempts();
+
         $request->validate([
             'email' => 'required',
             'password' => 'required',
@@ -57,11 +66,41 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
 
+            RateLimiter::clear($this->throttleKey());
+
             auth()->user()->generateCode();
 
             return redirect()->route('2fa.index');
         }
 
+        // Increment user's number of attempts (limit is 5) and set the waiting time to 180 seconds
+        RateLimiter::hit($this->throttleKey(), $seconds = 180);
+
         return redirect("login")->with('error', 'Wrong credentials ! Please try again.');
+    }
+
+    /**
+     * Get the rate limiting throttle key for the request.
+     *
+     * @return string
+     */
+    public function throttleKey()
+    {
+        return Str::lower(request('email')) . '|' . request()->ip();
+    }
+
+    /**
+     * Ensure the login request is not rate limited.
+     *
+     * @return void
+     */
+    public function checkTooManyFailedAttempts()
+    {
+        // Check if user has less than 5 attempts
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return redirect("login")->with('attemptError', 'Too many attempts. Please try again later.');
+        }
+
+        return;
     }
 }
