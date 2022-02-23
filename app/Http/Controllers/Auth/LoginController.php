@@ -44,13 +44,14 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
+
     /**
      * login method will 
-     * check nb of attempts
-     * validate fields, 
-     * check user credentials, 
-     * generate verfication code by email
-     * redirect to home if logged in
+     * checks nb of attempts
+     * validates fields, 
+     * checks user credentials, 
+     * generates verfication code by email
+     * redirects to home if logged in
      *
      * @return response()
      */
@@ -99,7 +100,8 @@ class LoginController extends Controller
         $maxNumberOfAttempts = 5;
 
         if (RateLimiter::tooManyAttempts($this->throttleKey(), $maxNumberOfAttempts)) {
-            return redirect("login")->with('attemptError', 'Too many attempts. Please try again later.');
+            throw new Exception('IP address banned. Too many login attempts.');
+            // return redirect("login")->with('attemptError', 'Too many attempts. Please try again later.');
         }
 
         return;
