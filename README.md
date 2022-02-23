@@ -41,3 +41,30 @@ If CSS is not correctly loaded
 You can edit CSS style in resources/sass/app.scss file. To see the changes automatically after saving
 
     npm run watch
+
+## Auth Flow
+```mermaid
+flowchart TD;
+    A[User submit login form] --> B{Exist in AD ?};
+    B-->|Yes| N{Login/Password ok ?};
+    N-->|Yes| F{First connection ?};
+    N:::decision-->|No| X;
+    F:::decision-->|Yes| G[Registering of User-Agent and Origin IP];
+    F-->|No| C{IP from France ?};
+    B:::decision-->|No| X[Login Failed !];
+    C:::decision-->|Yes| D{IP matching ?};
+    C-->|No| X;
+    G-->J;
+    E-->I{Link clicked ?};
+    I-->M{Token verification ok ?}-->|Yes| J;
+    M:::decision-->|No| X;
+    I:::decision-->|No| X;
+    D-->|Yes| Y{User-Agent matching ?};
+    D:::decision-->|No| V[Send alert email];
+    V-->Y;
+    Y-->|Yes| J;
+    Y:::decision-->|No| E[Send confirmation email];
+    J[Send 2FA code by mail] --> K{Code OK ?};
+    K:::decision-->|Yes| H[Successfully logged in !];
+    K-->|No| X;
+ ```
