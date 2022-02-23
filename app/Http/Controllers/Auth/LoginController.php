@@ -44,14 +44,36 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
+    /**
+     * override username method
+     *
+     * @return string
+     */
+    public function username()
+    {
+        return 'username';
+    }
+
+    /**
+     * override credentials method
+     *
+     * @return string
+     */
+    protected function credentials(Request $request)
+    {
+        return [
+            'username' => $request->username,
+            'password' => $request->password,
+        ];
+    }
 
     /**
      * login method will 
-     * checks nb of attempts
-     * validates fields, 
-     * checks user credentials, 
-     * generates verfication code by email
-     * redirects to home if logged in
+     * check nb of attempts
+     * validate fields, 
+     * check user credentials, 
+     * generate verfication code by email
+     * redirect to home if logged in
      *
      * @return response()
      */
@@ -60,11 +82,12 @@ class LoginController extends Controller
         $this->checkTooManyFailedAttempts();
 
         $request->validate([
-            'email' => 'required',
+            'username' => 'required|min:2',
             'password' => 'required',
         ]);
 
-        $credentials = $request->only('email', 'password');
+        $credentials = $this->credentials($request);
+        // $credentials = $request->only('username', 'password');
         if (Auth::attempt($credentials)) {
 
             RateLimiter::clear($this->throttleKey());
@@ -87,7 +110,7 @@ class LoginController extends Controller
      */
     public function throttleKey()
     {
-        return Str::lower(request('email')) . '|' . request()->ip();
+        return Str::lower(request('username')) . '|' . request()->ip();
     }
 
     /**
